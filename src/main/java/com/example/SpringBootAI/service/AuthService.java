@@ -6,7 +6,7 @@ import org.springframework.stereotype.Service;
 
 import com.example.SpringBootAI.model.User;
 import com.example.SpringBootAI.repository.UserRepository;
-import com.example.SpringBootAI.security.JwUtil;
+import com.example.SpringBootAI.security.JwtUtil;
 
 
 @Service
@@ -32,6 +32,6 @@ public class AuthService {
             throw new RuntimeException("Senha inválida");
         }
 
-        return JwUtil.generateToken(username);
+        return JwtUtil.generateToken(username);
     }
 }
