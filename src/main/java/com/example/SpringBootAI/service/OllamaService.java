@@ -14,22 +14,29 @@ import com.example.SpringBootAI.repository.PromptRepository;
 public class OllamaService {
 
     private final RestTemplate RestTemplate = new RestTemplate();
+
     
-    @Autowired
+@Autowired
     private PromptRepository repository;
 
-    public String generate(String prompt){
+    public String generate(String prompt) {
+
         String url = "http://localhost:11434/api/generate";
 
-        Map<String, Object> request = new HashMap();
+        Map<String, Object> request = new HashMap<>();
         request.put("model", "llama3.2");
         request.put("prompt", prompt);
-        request.put("stream", true);
+        request.put("stream", false); // 🔥 IMPORTANTE
 
-        Map response = RestTemplate.postForObject(url, request, Map.class);
+        Map<String, Object> response = RestTemplate.postForObject(url, request, Map.class);
+
+        if (response == null || response.get("response") == null) {
+            throw new RuntimeException("Erro ao chamar o Ollama");
+        }
 
         String result = response.get("response").toString();
 
+        // salvar no banco
         PromptLog log = new PromptLog();
         log.setPrompt(prompt);
         log.setResponse(result);
@@ -37,7 +44,5 @@ public class OllamaService {
         repository.save(log);
 
         return result;
-
     }
-        
 }
