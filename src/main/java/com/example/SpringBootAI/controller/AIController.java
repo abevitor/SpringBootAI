@@ -28,6 +28,6 @@ public class AIController {
     @GetMapping("/history")
     public List<PromptLog> history(HttpServletRequest request) {
         String username = (String) request.getAttribute("username");
-        return repository.findByUsername(username);
+        return repository.findByUsernameOrderByCreatedAtDesc(username);
     }
 }

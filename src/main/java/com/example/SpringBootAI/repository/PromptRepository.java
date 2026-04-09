@@ -8,6 +8,6 @@ import com.example.SpringBootAI.model.PromptLog;
 
 public interface PromptRepository extends JpaRepository<PromptLog, Long>{
 
-    List<PromptLog> findByUsername(String username);
+    List<PromptLog> findByUsernameOrderByCreatedAtDesc(String username);
     
 }

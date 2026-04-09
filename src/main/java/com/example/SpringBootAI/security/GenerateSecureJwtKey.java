@@ -1,7 +1,7 @@
 package com.example.SpringBootAI.security;
 
 import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.security.Keys;
+
 import java.util.Base64;
 import javax.crypto.SecretKey;
 
