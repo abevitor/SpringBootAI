@@ -2,6 +2,8 @@ package com.example.SpringBootAI.controller;
 
 import java.util.List;
 import org.springframework.web.bind.annotation.*;
+
+import com.example.SpringBootAI.dto.AIResponse;
 import com.example.SpringBootAI.model.PromptLog;
 import com.example.SpringBootAI.repository.PromptRepository;
 import com.example.SpringBootAI.service.OllamaService;
@@ -20,7 +22,7 @@ public class AIController {
     }
 
     @PostMapping("/generate")
-    public String generate(@RequestBody String prompt, HttpServletRequest request) {
+    public AIResponse generate(@RequestBody String prompt, HttpServletRequest request) {
         String username = (String) request.getAttribute("username");
         return service.generate(prompt, username);
     }

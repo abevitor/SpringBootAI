@@ -1,10 +1,12 @@
 package com.example.SpringBootAI.service;
 
+import com.example.SpringBootAI.dto.AIResponse;
 import com.example.SpringBootAI.model.PromptLog;
 import com.example.SpringBootAI.repository.PromptRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,7 +20,7 @@ public class OllamaService {
         this.repository = repository;
     }
 
-    public String generate(String prompt, String username) {
+    public AIResponse generate(String prompt, String username) {
         String url = "http://localhost:11434/api/generate";
 
         Map<String, Object> request = new HashMap<>();
@@ -26,21 +28,22 @@ public class OllamaService {
         request.put("prompt", prompt);
         request.put("stream", false);
 
-        Map<String, Object> response = restTemplate.postForObject(url, request, Map.class);
+        Map<String, Object> Ollamaresponse = restTemplate.postForObject(url, request, Map.class);
 
-        if (response == null || response.get("response") == null) {
+        if (Ollamaresponse == null || Ollamaresponse.get("response") == null) {
             throw new RuntimeException("Erro ao chamar o Ollama");
         }
 
-        String result = response.get("response").toString();
+        String result = Ollamaresponse.get("response").toString();
+        LocalDateTime now = LocalDateTime.now();
 
-        // salvar no banco
+        
         PromptLog log = new PromptLog();
         log.setPrompt(prompt);
         log.setResponse(result);
         log.setUsername(username);
         repository.save(log);
 
-        return result;
+        return new AIResponse(prompt, result, now);
     }
 }
