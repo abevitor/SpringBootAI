@@ -1,51 +1,36 @@
 package com.example.SpringBootAI.security;
 
-import jakarta.servlet.*;
-import jakarta.servlet.http.*;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
+import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
-import java.io.IOException;
+@Configuration
+@EnableWebSecurity
+public class SecurityConfig {
 
-import org.springframework.web.filter.OncePerRequestFilter;
+    private final JwtFilter jwtFilter;
 
-public class SecurityConfig extends OncePerRequestFilter {
+    // Injeta o JwtFilter que já criamos
+    public SecurityConfig(JwtFilter jwtFilter) {
+        this.jwtFilter = jwtFilter;
+    }
 
-    @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
-            throws ServletException, IOException {
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        http
+            .csrf(csrf -> csrf.disable())
+            .sessionManagement(session ->
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // sem sessão, pois usamos JWT
+            .authorizeHttpRequests(auth -> auth
+                .requestMatchers("/auth/**").permitAll()  // rotas públicas
+                .anyRequest().authenticated()             // todo o resto exige autenticação
+            )
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // registra o JwtFilter
 
-        String uri = request.getRequestURI();
-
-        
-        if (uri.startsWith("/auth")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        String header = request.getHeader("Authorization");
-
-       
-        if (header == null || !header.startsWith("Bearer ")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        try {
-            String token = header.substring(7);
-            String username = JwtUtil.extractUsername(token);
-
-            System.out.println("USER: " + username);
-
-            request.setAttribute("username", username);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            response.getWriter().write("Token inválido");
-            return;
-        }
-
-        filterChain.doFilter(request, response);
+        return http.build();
     }
 }

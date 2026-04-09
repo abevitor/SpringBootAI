@@ -1,37 +1,41 @@
 package com.example.SpringBootAI.service;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import org.springframework.stereotype.Service;
-
 import com.example.SpringBootAI.model.User;
 import com.example.SpringBootAI.repository.UserRepository;
 import com.example.SpringBootAI.security.JwtUtil;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import org.springframework.stereotype.Service;
 
+import java.util.Optional;
 
 @Service
 public class AuthService {
 
-    @Autowired
-    private UserRepository repository;
+    private final UserRepository repository;
+    private final PasswordEncoder passwordEncoder;
+    private final JwtUtil jwtUtil; 
 
-    @Autowired
-    private PasswordEncoder encoder;
+    public AuthService(UserRepository repository, PasswordEncoder passwordEncoder, JwtUtil jwtUtil) {
+        this.repository = repository;
+        this.passwordEncoder = passwordEncoder;
+        this.jwtUtil = jwtUtil;
+    }
 
     public String register(User user) {
-        user.setPassword(encoder.encode(user.getPassword()));
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
         repository.save(user);
-        return "Usuário criado!";
+        return "Usuário registrado com sucesso";
     }
 
     public String login(String username, String password) {
-        User user = repository.findByUsername(username)
-                .orElseThrow(() -> new RuntimeException("Usuário não encontrado"));
-
-        if (!encoder.matches(password, user.getPassword())) {
+        Optional<User> userOpt = repository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            throw new RuntimeException("Usuário não encontrado");
+        }
+        User user = userOpt.get();
+        if (!passwordEncoder.matches(password, user.getPassword())) {
             throw new RuntimeException("Senha inválida");
         }
-
-        return JwtUtil.generateToken(username);
+        return jwtUtil.generateToken(username); 
     }
 }

@@ -13,19 +13,12 @@ public class PromptLog {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-   
     private String prompt;
-
 
     @Column(columnDefinition = "TEXT")
     private String response;
     
     private String username;
-
-    
-
-    
-
   
      public String getUsername() {
         return username;
