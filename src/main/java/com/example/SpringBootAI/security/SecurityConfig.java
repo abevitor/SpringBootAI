@@ -1,26 +1,51 @@
 package com.example.SpringBootAI.security;
 
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.web.SecurityFilterChain;
+import jakarta.servlet.*;
+import jakarta.servlet.http.*;
 
-import com.example.SpringBootAI.service.JwtFilter;
+import java.io.IOException;
 
-@Configuration
-public class SecurityConfig {
+import org.springframework.web.filter.OncePerRequestFilter;
 
-    @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-        http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()
-                .anyRequest().authenticated()
-            )
-            .addFilterBefore(new JwtFilter(),
-            org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
+public class SecurityConfig extends OncePerRequestFilter {
 
-        return http.build();
+    @Override
+    protected void doFilterInternal(HttpServletRequest request,
+                                    HttpServletResponse response,
+                                    FilterChain filterChain)
+            throws ServletException, IOException {
+
+        String uri = request.getRequestURI();
+
+        
+        if (uri.startsWith("/auth")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        String header = request.getHeader("Authorization");
+
+       
+        if (header == null || !header.startsWith("Bearer ")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        try {
+            String token = header.substring(7);
+            String username = JwtUtil.extractUsername(token);
+
+            System.out.println("USER: " + username);
+
+            request.setAttribute("username", username);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.getWriter().write("Token inválido");
+            return;
+        }
+
+        filterChain.doFilter(request, response);
     }
 }

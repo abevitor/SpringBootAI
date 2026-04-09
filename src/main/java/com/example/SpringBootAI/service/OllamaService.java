@@ -19,15 +19,14 @@ public class OllamaService {
 @Autowired
     private PromptRepository repository;
 
-    public String generate(String prompt) {
+    public String generate(String prompt, String username) {
 
         String url = "http://localhost:11434/api/generate";
 
         Map<String, Object> request = new HashMap<>();
         request.put("model", "llama3.2");
         request.put("prompt", prompt);
-        request.put("stream", false); // 🔥 IMPORTANTE
-
+        request.put("stream", false); 
         Map<String, Object> response = RestTemplate.postForObject(url, request, Map.class);
 
         if (response == null || response.get("response") == null) {
@@ -40,6 +39,7 @@ public class OllamaService {
         PromptLog log = new PromptLog();
         log.setPrompt(prompt);
         log.setResponse(result);
+        log.setUsername(username);
 
         repository.save(log);
 
