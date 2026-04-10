@@ -1,7 +1,10 @@
 package com.example.SpringBootAI.controller;
 
 import java.util.List;
+
+import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import com.example.SpringBootAI.dto.AIResponse;
 import com.example.SpringBootAI.model.PromptLog;
@@ -14,7 +17,7 @@ import jakarta.servlet.http.HttpServletRequest;
 public class AIController {
 
     private final PromptRepository repository;
-    private final OllamaService service; // ✅ sem @Autowired
+    private final OllamaService service; 
 
     public AIController(OllamaService service, PromptRepository repository) {
         this.service = service;
@@ -25,6 +28,14 @@ public class AIController {
     public AIResponse generate(@RequestBody String prompt, HttpServletRequest request) {
         String username = (String) request.getAttribute("username");
         return service.generate(prompt, username);
+
+    }
+
+    @PostMapping(value = " /generate/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter streamGenerate(@RequestBody String prompt, HttpServletRequest request){
+        String username = (String) request.getAttribute("username");
+        return service.streamGenerate(prompt, username);
+        
     }
 
     @GetMapping("/history")
