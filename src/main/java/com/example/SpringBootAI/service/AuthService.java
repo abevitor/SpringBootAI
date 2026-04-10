@@ -1,5 +1,6 @@
 package com.example.SpringBootAI.service;
 
+import com.example.SpringBootAI.exception.BadRequestException;
 import com.example.SpringBootAI.model.User;
 import com.example.SpringBootAI.repository.UserRepository;
 import com.example.SpringBootAI.security.JwtUtil;
@@ -22,9 +23,20 @@ public class AuthService {
     }
 
     public String register(User user) {
+        // 
+        if (user.getUsername() == null || user.getUsername().isBlank()) {
+            throw new BadRequestException("Username é obrigatório");
+        }
+        if (user.getPassword() == null || user.getPassword().isBlank()) {
+            throw new BadRequestException("Password é obrigatório");
+        }
+        // 
+        if (repository.findByUsername(user.getUsername()).isPresent()) {
+            throw new BadRequestException("Username já está em uso");
+        }
         user.setPassword(passwordEncoder.encode(user.getPassword()));
         repository.save(user);
-        return "Usuário registrado com sucesso";
+        return jwtUtil.generateToken(user.getUsername());
     }
 
     public String login(String username, String password) {
