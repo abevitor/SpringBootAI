@@ -1,20 +1,24 @@
 package com.example.SpringBootAI.controller;
 
-import java.io.IOException;
-import java.util.List;
-
-import org.springframework.http.MediaType;
-import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
-
 import com.example.SpringBootAI.dto.AIResponse;
 import com.example.SpringBootAI.dto.StatsResponse;
+import com.example.SpringBootAI.exception.NotFoundException;
 import com.example.SpringBootAI.model.PromptLog;
 import com.example.SpringBootAI.repository.PromptRepository;
 import com.example.SpringBootAI.service.ExportService;
 import com.example.SpringBootAI.service.OllamaService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
+
+import java.io.IOException;
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/api/ai")
@@ -45,9 +49,30 @@ public class AIController {
     }
 
     @GetMapping("/history")
-    public List<PromptLog> history(HttpServletRequest request) {
+    public Page<PromptLog> history(HttpServletRequest request,
+                                   @RequestParam(defaultValue = "0") int page,
+                                   @RequestParam(defaultValue = "20") int size) {
+                            String username = (String) request.getAttribute("username");
+                            Pageable pageable = PageRequest.of(page,size);
+                            return repository.findByUsernameOrderByCreatedAtDesc(username, pageable);
+                                   }
+
+    @GetMapping("/history/search")
+    public List<PromptLog> search(HttpServletRequest request,
+                                  @RequestParam String q) {
         String username = (String) request.getAttribute("username");
-        return repository.findByUsernameOrderByCreatedAtDesc(username);
+
+        if (q == null || q.isBlank()) {
+            throw new NotFoundException("Informe o termo de busca");
+        }
+
+        return repository.search(username, q);
+    }
+
+    @GetMapping("/history/{id}")
+    public String deleteOne(HttpServletRequest request, PathVariable Long id) {
+        String
+
     }
 
     @GetMapping("/export")

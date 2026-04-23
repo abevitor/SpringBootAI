@@ -31,5 +31,11 @@ public interface PromptRepository extends JpaRepository<PromptLog, Long>{
     @Query("SELECT p FROM PromptLog p WHERE p.username = :username ORDER BY LENGTH(p.prompt) DESC LIMIT 1")
     PromptLog findLongestPromptLog(@Param("username") String username);
 
+    @Query("SELECT p FROM PromptLog p WHERE p.username = :username " +
+       "AND (LOWER(p.prompt) LIKE LOWER(CONCAT('%', :q, '%')) " +
+       "OR LOWER(p.response) LIKE LOWER(CONCAT('%', :q, '%'))) " +
+       "ORDER BY p.createdAt DESC")
+List<PromptLog> search(@Param("username") String username, @Param("q") String q);
+
     
 }
