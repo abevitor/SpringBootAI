@@ -13,10 +13,12 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 public class SecurityConfig {
 
     private final JwtFilter jwtFilter;
+    private final RateLimitFilter rateLimitFilter;
 
-    // Injeta o JwtFilter que já criamos
-    public SecurityConfig(JwtFilter jwtFilter) {
+
+    public SecurityConfig(JwtFilter jwtFilter, RateLimitFilter rateLimitFilter) {
         this.jwtFilter = jwtFilter;
+        this.rateLimitFilter = rateLimitFilter;
     }
 
     @Bean
@@ -24,13 +26,14 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session ->
-                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) // sem sessão, pois usamos JWT
+                session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) 
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/auth/**").permitAll()  // rotas públicas
-                .anyRequest().authenticated()             // todo o resto exige autenticação
+                .requestMatchers("/auth/**").permitAll()  
+                .anyRequest().authenticated()             
             )
-            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class); // registra o JwtFilter
-
+            .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+            .addFilterAfter(rateLimitFilter, JwtFilter.class);
+            
         return http.build();
     }
 }
