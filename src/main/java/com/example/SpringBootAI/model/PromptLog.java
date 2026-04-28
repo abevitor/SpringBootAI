@@ -7,6 +7,8 @@ import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.PrePersist;
 
 @Entity
@@ -22,7 +24,12 @@ public class PromptLog {
     private String response;
     
     private String username;
+
+    @ManyToOne
+    @JoinColumn(name = "conversation_id")
+    private Conversation conversation;
     
+  
     @Column(updatable = false)
     private LocalDateTime createdAt;
     
@@ -70,5 +77,14 @@ public class PromptLog {
     public void setResponse(String response) {
         this.response = response;
     }
+
+      public Conversation getConversation() {
+        return conversation;
+    }
+
+    public void setConversation(Conversation conversation) {
+        this.conversation = conversation;
+    }
+
   
 }
