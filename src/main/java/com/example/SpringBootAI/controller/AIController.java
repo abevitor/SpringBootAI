@@ -9,6 +9,8 @@ import com.example.SpringBootAI.service.ExportService;
 import com.example.SpringBootAI.service.OllamaService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
+
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -70,11 +72,29 @@ public class AIController {
     }
 
     @GetMapping("/history/{id}")
-    public String deleteOne(HttpServletRequest request, PathVariable Long id) {
-        String
+    public String deleteOne(HttpServletRequest request, @PathVariable Long id) {
+        String username = (String) request.getAttribute("username");
+
+        PromptLog log = repository.findById(id)
+                        .orElseThrow(() -> new NotFoundException("Prompt nao encontrado"));
+
+                        if(!log.getUsername().equals(username)) {
+                            throw new NotFoundException("Prompt nao encontrado");
+                        }
+
+                        repository.delete(log);
+                        return "Prompt deletado com sucesso";
 
     }
 
+    @Transactional
+    @DeleteMapping("/history")
+    public String deleteAll(HttpServletRequest request){
+        String username = (String) request.getAttribute("username");
+        repository.deleteAllByUsername(username);
+        return "Histórico deletado com sucesso";
+    }
+  
     @GetMapping("/export")
     public void exportCsv(HttpServletRequest request, HttpServletResponse response) throws IOException {
         String username = (String) request.getAttribute("username");
