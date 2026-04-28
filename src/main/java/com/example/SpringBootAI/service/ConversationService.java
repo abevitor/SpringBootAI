@@ -5,7 +5,6 @@ import com.example.SpringBootAI.model.Conversation;
 import com.example.SpringBootAI.model.PromptLog;
 import com.example.SpringBootAI.repository.ConversationRepository;
 import com.example.SpringBootAI.repository.PromptRepository;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
