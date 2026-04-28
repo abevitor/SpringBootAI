@@ -43,7 +43,7 @@ public class AIController {
 
     }
 
-    @PostMapping(value = " /generate/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
+    @PostMapping(value = "/generate/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
     public SseEmitter streamGenerate(@RequestBody String prompt, HttpServletRequest request){
         String username = (String) request.getAttribute("username");
         return service.streamGenerate(prompt, username);
@@ -71,7 +71,7 @@ public class AIController {
         return repository.search(username, q);
     }
 
-    @GetMapping("/history/{id}")
+    @DeleteMapping("/history/{id}")
     public String deleteOne(HttpServletRequest request, @PathVariable Long id) {
         String username = (String) request.getAttribute("username");
 
